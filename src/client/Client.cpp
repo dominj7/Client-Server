@@ -28,3 +28,16 @@ void Client::sendTcp(std::string message)
 	packet << message;
 	sendTcp(packet);
 }
+
+void Client::sendUdp(const unsigned short port, sf::Packet packet)
+{
+	sf::UdpSocket udpSocket;
+	udpSocket.send(packet, m_serverAddress, port);
+}
+
+void Client::sendUdp(const unsigned short port, std::string message)
+{
+	sf::Packet packet;
+	packet << message;
+	sendUdp(port, packet);
+}

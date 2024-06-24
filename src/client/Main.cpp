@@ -9,13 +9,14 @@ int main()
 	std::cout << "\tClient" << std::endl;
 
 	Client               client;
-	static constexpr unsigned short port{ 2020 };
-	client.connectTcp(port);
+	static constexpr unsigned short tcpPort{ 9069 }, udpPort{ 2020 };
+	client.connectTcp(tcpPort);
 
 	while (true)
 	{
 		std::string message;
 		std::cin >> message;
 		client.sendTcp(message);
+		client.sendUdp(udpPort, message);
 	}
 }
