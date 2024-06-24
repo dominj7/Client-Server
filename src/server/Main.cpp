@@ -1,7 +1,11 @@
+#include "Server.h"
 #include <iostream>
 
 int main()
 {
-	std::cout << "Server" << std::endl;
-	std::cin.get();
+	std::cout << "\tServer" << std::endl;
+
+	Server               server;
+	static constexpr unsigned short tcpPort{ 2020 };
+	server.listenTcp(tcpPort);
 }
