@@ -1,7 +1,7 @@
 #include "Client.h"
 #include <iostream>
 
-static constexpr std::string tcpPrefix{ "TCP:\t" };
+static const std::string tcpPrefix{ "TCP:\t" };
 
 Client::Client(sf::IpAddress serverAddress) :
     m_serverAddress{ serverAddress }
@@ -39,5 +39,18 @@ void Client::sendUdp(const unsigned short port, std::string message)
 {
 	sf::Packet packet;
 	packet << message;
+	std::cout << "send: " << message << " at " << port << '\n';
 	sendUdp(port, packet);
+}
+
+std::optional< sf::Uint16 > Client::recvUdpPort()
+{
+	sf::Packet packet{};
+	if (m_tcpSocket.receive(packet) != sf::Socket::Status::Done)
+		return std::nullopt;
+
+	sf::Uint16 localPort{};
+	packet >> localPort;
+
+	return localPort;
 }
