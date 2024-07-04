@@ -17,9 +17,9 @@ void UdpConnection::checkForReadySockets(
     std::vector< std::unique_ptr< sf::UdpSocket > >& udpSockets, std::mutex& udpSocketsMutex,
     sf::SocketSelector& udpSelector)
 {
-	if (udpSelector.wait()) // Possible data race :)
+	std::lock_guard< std::mutex > guard(udpSocketsMutex);
+	if (udpSelector.wait(sf::Time(sf::milliseconds(10))))
 	{
-		std::lock_guard< std::mutex > guard(udpSocketsMutex);
 		for (auto& client : udpSockets)
 		{
 			if (udpSelector.isReady(*client))
