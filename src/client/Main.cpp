@@ -8,15 +8,20 @@ int main()
 {
 	std::cout << "\tClient" << std::endl;
 
-	Client               client;
-	static constexpr unsigned short tcpPort{ 9069 }, udpPort{ 2020 };
+	Client                          client;
+	static constexpr unsigned short tcpPort{ 9069 };
 	client.connectTcp(tcpPort);
+	std::optional< sf::Uint16 > udpPort = client.recvUdpPort();
 
+	if (!udpPort.has_value())
+		return 1;
+
+	std::cout << "Port: " << udpPort.value() << '\n';
 	while (true)
 	{
 		std::string message;
 		std::cin >> message;
-		client.sendTcp(message);
-		client.sendUdp(udpPort, message);
+		client.sendUdp(udpPort.value(), message);
+		// client.sendTcp(message);
 	}
 }

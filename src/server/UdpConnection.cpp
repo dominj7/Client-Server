@@ -1,24 +1,43 @@
 #include "UdpConnection.h"
 #include <iostream>
 
-static constexpr std::string udpPrefix{ "UDP:\t" };
+static const std::string udpPrefix{ "UDP:\t" };
 
-void UdpConnection::listen(const unsigned short port)
+void UdpConnection::listen(const unsigned short                             port,
+                           std::vector< std::unique_ptr< sf::UdpSocket > >& udpSockets,
+                           std::mutex& udpSocketsMutex, sf::SocketSelector& udpSelector)
 {
-	sf::UdpSocket socket;
-	if (socket.bind(port) != sf::Socket::Status::Done)
-		return;
-
 	while (true)
 	{
-		sf::Packet     packet;
-		sf::IpAddress  senderAddress;
-		unsigned short senderPort{};
-		if (socket.receive(packet, senderAddress, senderPort) != sf::Socket::Status::Done)
-			break;
-
-		std::string message;
-		packet >> message;
-		std::cout << udpPrefix << message << std::endl;
+		checkForReadySockets(udpSockets, udpSocketsMutex, udpSelector);
 	}
+}
+
+void UdpConnection::checkForReadySockets(
+    std::vector< std::unique_ptr< sf::UdpSocket > >& udpSockets, std::mutex& udpSocketsMutex,
+    sf::SocketSelector& udpSelector)
+{
+	std::lock_guard< std::mutex > guard(udpSocketsMutex);
+	if (udpSelector.wait(sf::Time(sf::milliseconds(10))))
+	{
+		for (auto& client : udpSockets)
+		{
+			if (udpSelector.isReady(*client))
+				handleReadySocket(client);
+		}
+	}
+}
+
+void UdpConnection::handleReadySocket(std::unique_ptr< sf::UdpSocket >& client)
+{
+	sf::Packet     packet;
+	sf::IpAddress  senderAddress;
+	unsigned short senderPort;
+
+	if (client->receive(packet, senderAddress, senderPort) != sf::Socket::Done)
+		return;
+
+	std::string data{};
+	packet >> data;
+	std::cout << udpPrefix << data << '\n';
 }

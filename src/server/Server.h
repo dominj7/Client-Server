@@ -1,7 +1,9 @@
 #include "TcpConnection.h"
 #include "UdpConnection.h"
 #include <SFML/Network.hpp>
+#include <mutex>
 #include <thread>
+#include <vector>
 
 class Server final
 {
@@ -14,4 +16,8 @@ private:
 	TcpConnection                  m_tcpConnection;
 	UdpConnection                  m_udpConnection;
 	std::unique_ptr< std::thread > m_tcpThread, m_udpThread;
+
+	std::vector< std::unique_ptr< sf::UdpSocket > > m_udpSockets;
+	std::mutex                                      m_udpSocketsMutex{};
+	sf::SocketSelector                              m_udpSelector;
 };
